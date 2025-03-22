@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Timetable Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f9fafb;
+        }
+        .hide { 
+            display: none; 
+        }
+        .active-page { 
+            display: block; 
+        }
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @media (max-width: 640px) {
+            .responsive-nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .responsive-nav-links {
+                margin-top: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            .responsive-nav-links button {
+                margin-top: 0.5rem;
+                padding: 0.5rem 0;
+                width: 100%;
+                text-align: left;
+            }
+        }
+        .lecture-card {
+            transition: all 0.3s ease;
+        }
+        .lecture-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center active-page">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">E-Timetable Management System</h1>
+            <div class="flex flex-col space-y-6">
+                <button onclick="showLogin('student')" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition flex items-center justify-center space-x-2 text-lg">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Student Login</span>
+                </button>
+                <button onclick="showLogin('admin')" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition flex items-center justify-center space-x-2 text-lg">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Admin Login</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Login Form -->
+    <div id="studentLoginForm" class="min-h-screen flex items-center justify-center hide">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Student Login</h2>
+            <form onsubmit="handleLogin(event, 'student')" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                    <input type="text" placeholder="Enter your student ID" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" placeholder="Enter your password" id="studentPassword" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required minlength="8">
+                    <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition font-medium">Login</button>
+                <button type="button" onclick="backToMain()" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 transition font-medium">Back</button>
+                <div class="text-sm text-center">
+                    <a href="#" class="text-blue-600 hover:text-blue-800">Forgot password?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Form -->
+    <div id="adminLoginForm" class="min-h-screen flex items-center justify-center hide">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-center mb-6 text-green-600">Admin Login</h2>
+            <form onsubmit="handleLogin(event, 'admin')" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Admin ID</label>
+                    <input type="text" placeholder="Enter your admin ID" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" placeholder="Enter your password" id="adminPassword" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" required minlength="8">
+                    <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-admin" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <label for="remember-admin" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition font-medium">Login</button>
+                <button type="button" onclick="backToMain()" class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg hover:bg-gray-300 transition font-medium">Back</button>
+                <div class="text-sm text-center">
+                    <a href="#" class="text-green-600 hover:text-green-800">Forgot password?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timetable Page -->
+    <div id="timetablePage" class="min-h-screen pb-10 hide">
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4 responsive-nav">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-blue-600"><i class="bi bi-calendar3"></i> E-Timetable Management System</h1>
+                    </div>
+                    <div class="flex items-center space-x-6 responsive-nav-links">
+                        <button onclick="showPage('timetablePage')" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                            <i class="bi bi-grid-3x3-gap-fill mr-1"></i> Timetable
+                        </button>
+                        <button onclick="showPage('practicalPage')" class="text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                            <i class="bi bi-journal-text mr-1"></i> Practicals
+                        </button>
+                        <button onclick="showNotificationSettings()" class="text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                            <i class="bi bi-bell mr-1"></i> Notifications
+                        </button>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium flex items-center">
+                            <i class="bi bi-box-arrow-right mr-1"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="mb-6">
+                <h2 class="text-lg text-gray-600 mb-1">Welcome, <span id="userName" class="font-medium">Student</span></h2>
+                <h3 id="currentDate" class="text-sm text-gray-500">Loading date...</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Current Lecture Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 lecture-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-blue-600">Current Lecture</h2>
+                        <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center notification-badge">
+                            <i class="bi bi-broadcast mr-1"></i> Live
+                        </div>
+                    </div>
+                    <div id="currentLecture" class="p-4 bg-blue-50 rounded-lg">
+                        <div class="animate-pulse flex flex-col space-y-2">
+                            <div class="h-4 bg-blue-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-blue-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button onclick="sendNotification()" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                            <i class="bi bi-envelope mr-1"></i> Send me an SMS notification
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Next Lecture Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 lecture-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-green-600">Next Lecture</h2>
+                        <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="bi bi-clock mr-1"></i> Upcoming
+                        </div>
+                    </div>
+                    <div id="nextLecture" class="p-4 bg-green-50 rounded-lg">
+                        <div class="animate-pulse flex flex-col space-y-2">
+                            <div class="h-4 bg-green-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-green-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <i class="bi bi-clock-history text-gray-500 mr-1"></i>
+                        <span id="countdown" class="text-sm text-gray-500">Starts in 25 minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Timetable -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Weekly Timetable</h2>
+                    <div class="flex items-center space-x-2">
+                        <select id="weekSelector" class="border rounded-md p-2 text-sm" onchange="loadTimetable()">
+                            <option value="current">Current Week</option>
+                            <option value="next">Next Week</option>
+                        </select>
+                        <button onclick="printTimetable()" class="bg-gray-100 p-2 rounded-md hover:bg-gray-200">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        <button onclick="downloadTimetable()" class="bg-gray-100 p-2 rounded-md hover:bg-gray-200">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Time</th>
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Monday</th>
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Tuesday</th>
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Wednesday</th>
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Thursday</th>
+                                <th class="p-3 text-left text-gray-600 font-semibold border-b">Friday</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody">
+                            <!-- Dynamically filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Room Map -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Campus Map</h2>
+                <div class="bg-gray-100 h-60 rounded-lg flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="bi bi-map text-gray-400 text-4xl"></i>
+                        <p class="text-gray-500 mt-2">Interactive campus map</p>
+                        <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">View Map</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Practical Page -->
+    <div id="practicalPage" class="min-h-screen pb-10 hide">
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4 responsive-nav">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-blue-600"><i class="bi bi-calendar3"></i> E-Timetable Management System</h1>
+                    </div>
+                    <div class="flex items-center space-x-6 responsive-nav-links">
+                        <button onclick="showPage('timetablePage')" class="text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                            <i class="bi bi-grid-3x3-gap-fill mr-1"></i> Timetable
+                        </button>
+                        <button onclick="showPage('practicalPage')" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                            <i class="bi bi-journal-text mr-1"></i> Practicals
+                        </button>
+                        <button onclick="showNotificationSettings()" class="text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                            <i class="bi bi-bell mr-1"></i> Notifications
+                        </button>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium flex items-center">
+                            <i class="bi bi-box-arrow-right mr-1"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Practical Sessions</h2>
+                <p class="text-gray-600">View your lab work and practical sessions</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Today's Practicals</h2>
+                    <div>
+                        <span id="practicalDate" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Loading date...</span>
+                    </div>
+                </div>
+                <div id="practicalsList" class="space-y-4">
+                    <!-- Dynamically filled by JavaScript -->
+                    <div class="animate-pulse flex flex-col space-y-2">
+                        <div class="h-20 bg-gray-100 rounded w-full"></div>
+                        <div class="h-20 bg-gray-100 rounded w-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Lab Materials -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Lab Materials</h2>
+                    <ul class="space-y-2">
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div class="flex items-center">
+                                <i class="bi bi-file-earmark-pdf text-red-500 mr-2"></i>
+                                <span>Physics Lab Manual</span>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </li>
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div class="flex items-center">
+                                <i class="bi bi-file-earmark-pdf text-red-500 mr-2"></i>
+                                <span>Chemistry Lab Guide</span>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </li>
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div class="flex items-center">
+                                <i class="bi bi-file-earmark-pdf text-red-500 mr-2"></i>
+                                <span>Biology Practical Instructions</span>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Lab Instructors -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Lab Instructors</h2>
+                    <ul class="space-y-2">
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div>
+                                <p class="font-medium">Dr. Robert Johnson</p>
+                                <p class="text-sm text-gray-600">Physics Lab</p>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                        </li>
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div>
+                                <p class="font-medium">Dr. Emily Carter</p>
+                                <p class="text-sm text-gray-600">Chemistry Lab</p>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                        </li>
+                        <li class="p-3 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition">
+                            <div>
+                                <p class="font-medium">Dr. Michael Thompson</p>
+                                <p class="text-sm text-gray-600">Biology Lab</p>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hide">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Notification Settings</h2>
+                <button onclick="closeNotificationSettings()" class="text-gray-500 hover:text-gray-700">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number for SMS</label>
+                    <input type="tel" placeholder="+1 (123) 456-7890" class="w-full p-3 border rounded-lg" required>
+                    <p class="text-xs text-gray-500 mt-1">We'll send you SMS notifications about your lectures</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notification Preferences</label>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="notify-lectures" checked class="h-4 w-4 text-blue-600 rounded">
+                            <label for="notify-lectures" class="ml-2 text-sm text-gray-700">Upcoming lectures</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="notify-practicals" checked class="h-4 w-4 text-blue-600 rounded">
+                            <label for="notify-practicals" class="ml-2 text-sm text-gray-700">Upcoming practicals</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="notify-changes" checked class="h-4 w-4 text-blue-600 rounded">
+                            <label for="notify-changes" class="ml-2 text-sm text-gray-700">Timetable changes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Advance Notification Time</label>
+                    <select class="w-full p-3 border rounded-lg">
+                        <option value="10">10 minutes before</option>
+                        <option value="15" selected>15 minutes before</option>
+                        <option value="30">30 minutes before</option>
+                        <option value="60">1 hour before</option>
+                    </select>
+                </div>
+                <button type="button" onclick="saveNotificationSettings()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Save Settings</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center hide">
+        <i class="bi bi-check-circle-fill mr-2"></i>
+        <span id="toastMessage">Notification sent successfully!</span>
+    </div>
+
+    <script>
+        // Sample data
+        const timetableData = {
+            current: {
+                "Monday": [
+                    { time: "9:00 - 10:00", subject: "Mathematics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "10:00 - 11:00", subject: "Physics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "11:00 - 12:00", subject: "Chemistry", room: "Room 305", professor: "Dr. Williams" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 14:00", subject: "Computer Science", room: "Lab 101", professor: "Prof. Brown" },
+                    { time: "14:00 - 15:00", subject: "Engineering Drawing", room: "Design Studio", professor: "Prof. Davis" }
+                ],
+                "Tuesday": [
+                    { time: "9:00 - 10:00", subject: "Computer Science", room: "Lab 101", professor: "Prof. Brown" },
+                    { time: "10:00 - 11:00", subject: "Mathematics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "11:00 - 12:00", subject: "Physics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Physics Lab", room: "Lab 203", professor: "Dr. Johnson" }
+                ],
+                "Wednesday": [
+                    { time: "9:00 - 10:00", subject: "Chemistry", room: "Room 305", professor: "Dr. Williams" },
+                    { time: "10:00 - 11:00", subject: "Engineering Drawing", room: "Design Studio", professor: "Prof. Davis" },
+                    { time: "11:00 - 12:00", subject: "Mathematics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Chemistry Lab", room: "Lab C2", professor: "Dr. Williams" }
+                ],
+                "Thursday": [
+                    { time: "9:00 - 10:00", subject: "Physics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "10:00 - 11:00", subject: "Computer Science", room: "Lab 101", professor: "Prof. Brown" },
+                    { time: "11:00 - 12:00", subject: "English", room: "Room 102", professor: "Mrs. Wilson" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Computer Lab", room: "Lab 101", professor: "Prof. Brown" }
+                ],
+                "Friday": [
+                    { time: "9:00 - 11:00", subject: "Project Work", room: "Project Lab", professor: "Prof. Miller" },
+                    { time: "11:00 - 12:00", subject: "Mathematics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 14:00", subject: "Physics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "14:00 - 15:00", subject: "Career Counseling", room: "Room 105", professor: "Dr. Thompson" }
+                ]
+            },
+            next: {
+                "Monday": [
+                    { time: "9:00 - 10:00", subject: "Advanced Mathematics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "10:00 - 11:00", subject: "Quantum Physics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "11:00 - 12:00", subject: "Organic Chemistry", room: "Room 305", professor: "Dr. Williams" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Programming Lab", room: "Lab 101", professor: "Prof. Brown" }
+                ],
+                "Tuesday": [
+                    { time: "9:00 - 11:00", subject: "Data Structures", room: "Lab 101", professor: "Prof. Brown" },
+                    { time: "11:00 - 12:00", subject: "Statistics", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Physics Lab", room: "Lab 203", professor: "Dr. Johnson" }
+                ],
+                "Wednesday": [
+                    { time: "9:00 - 10:00", subject: "Biochemistry", room: "Room 305", professor: "Dr. Williams" },
+                    { time: "10:00 - 11:00", subject: "3D Modeling", room: "Design Studio", professor: "Prof. Davis" },
+                    { time: "11:00 - 12:00", subject: "Calculus", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Analytical Lab", room: "Lab C2", professor: "Dr. Williams" }
+                ],
+                "Thursday": [
+                    { time: "9:00 - 10:00", subject: "Mechanics", room: "Room 203", professor: "Dr. Johnson" },
+                    { time: "10:00 - 12:00", subject: "Algorithms", room: "Lab 101", professor: "Prof. Brown" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Database Lab", room: "Lab 101", professor: "Prof. Brown" }
+                ],
+                "Friday": [
+                    { time: "9:00 - 11:00", subject: "Term Project", room: "Project Lab", professor: "Prof. Miller" },
+                    { time: "11:00 - 12:00", subject: "Final Review", room: "Room 101", professor: "Dr. Smith" },
+                    { time: "12:00 - 13:00", subject: "Lunch Break", room: "Cafeteria", professor: "" },
+                    { time: "13:00 - 15:00", subject: "Project Presentations", room: "Conference Hall", professor: "Department Faculty" }
+                ]
+            }
+        };
+
+        const practicals = [
+            { subject: "Physics Lab", time: "2:00 PM - 4:00 PM", lab: "Lab 201", instructor: "Dr. Robert Johnson", materials: ["Oscilloscope", "Pendulum", "Springs"], description: "Experiment on oscillations and waves" },
+            { subject: "Chemistry Lab", time: "4:00 PM - 6:00 PM", lab: "Lab C2", instructor: "Dr. Emily Carter", materials: ["Test tubes", "Bunsen burner", "Chemicals"], description: "Titration and pH measurement experiments" },
+            { subject: "Computer Lab", time: "10:00 AM - 12:00 PM", lab: "IT Lab 3", instructor: "Prof. Michael Brown", materials: ["Computers", "Software manuals"], description: "Implementation of data structures" }
+        ];
+
+        // Navigation Functions
+        function showPage(pageId) {
+            document.querySelectorAll('div[id$="Page"]').forEach(page => page.classList.add('hide'));
+            document.getElementById(pageId).classList.remove('hide');
+            
+            // Update current page UI
+            if (pageId === 'timetablePage') {
+                updateCurrentAndNextLecture();
+                loadTimetable();
+            } else if (pageId === 'practicalPage') {
+                loadPracticals();
+            }
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showLogin(type) {
+            document.getElementById('loginPage').classList.add('hide');
+            document.getElementById(type + 'LoginForm').classList.remove('hide');
+        }
+
+        function backToMain() {
+            document.querySelectorAll('div[id$="LoginForm"]').forEach(form => form.classList.add('hide'));
+            document.getElementById('loginPage').classList.remove('hide');
+        }
+
+        function handleLogin(event, type) {
+            event.preventDefault();
+            
+            // Password validation
+            const passwordField = document.getElementById(type + 'Password');
+            if (passwordField.value.length < 8) {
+                showToast("Password must be at least 8 characters long", "error");
+                return;
+            }
+            
+            showPage('timetablePage');
+            updateCurrentDate();
+            updateCurrentAndNextLecture();
+            loadTimetable();
+            
+            // Set username based on login type
+            document.getElementById('userName').textContent = type === 'admin' ? 'Administrator' : 'Student';
+            
+            // Show welcome toast
+            showToast(`Welcome ${type === 'admin' ? 'Administrator' : 'Student'}!`);
+        }
+
+        function logout() {
+            showPage('loginPage');
+            
+            // Clear any password fields
+            document.getElementById('studentPassword').value = '';
+            document.getElementById('adminPassword').value = '';
+            
+            showToast("You have been logged out successfully");
+        }
+
+        // Timetable Functions
+        function updateCurrentDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('currentDate').textContent = formattedDate;
+            document.getElementById('practicalDate').textContent = formattedDate;
+        }
+
+        function updateCurrentAndNextLecture() {
+            const now = new Date();
+            const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // Get current week selection
+            const weekSelector = document.getElementById('weekSelector');
+            const currentWeek = weekSelector.value;
+            
+            // Get day's lectures
+            const dayLectures = timetableData[currentWeek][day] || timetableData[currentWeek]["Monday"]; // Default to Monday if current day not available
+            
+            // Find current and next lecture
+            let currentLecture = null;
+            let nextLecture = null;
+            
+            for (let i = 0; i < dayLectures.length; i++) {
+                const lecture = dayLectures[i];
+                if (lecture.subject === "Lunch Break") continue;
+                
+                const timeRange = lecture.time.split(" - ");
+                const startTime = timeRange[0].split(":");
+                const endTime = timeRange[1].split(":");
+                
+                const startHour = parseInt(startTime[0]);
+                const startMinute = parseInt(startTime[1]);
+                const endHour = parseInt(endTime[0]);
+                const endMinute = parseInt(endTime[1]);
+                
+                // Check if current time is within lecture time
+                if ((hours > startHour || (hours === startHour && minutes >= startMinute)) && 
+                    (hours < endHour || (hours === endHour && minutes < endMinute))) {
+                    currentLecture = lecture;
+                }
+                
+                // Check for next lecture
+                if (hours < startHour || (hours === startHour && minutes < startMinute)) {
+                    if (!nextLecture) {
+                        nextLecture = lecture;
+                    }
+                }
+            }
+            
+            // If no current or next lecture found, use first and second lecture
+            if (!currentLecture && dayLectures.length > 0) {
+                for (let i = 0; i < dayLectures.length; i++) {
+                    if (dayLectures[i].subject !== "Lunch Break") {
+                        currentLecture = dayLectures[i];
+                        break;
+                    }
+                }
+            }
+            
+            if (!nextLecture && dayLectures.length > 1) {
+                let foundFirst = false;
+                for (let i = 0; i < dayLectures.length; i++) {
+                    if (dayLectures[i].subject !== "Lunch Break") {
+                        if (foundFirst) {
+                            nextLecture = dayLectures[i];
+                            break;
+                        }
+                        foundFirst = true;
+                    }
+                }
+            }
+            
+            // Update UI
+            if (currentLecture) {
+                document.getElementById('currentLecture').innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg">${currentLecture.subject}</h3>
+                            <p class="text-gray-600">${currentLecture.time}</p>
+                            <p class="text-gray-600">${currentLecture.room}</p>
+                            <p class="text-sm mt-1">Instructor: ${currentLecture.professor}</p>
+                        </div>
+                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">In Progress</span>
+                    </div>
+                `;
+            }
+            
+            if (nextLecture) {
+                document.getElementById('nextLecture').innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg">${nextLecture.subject}</h3>
+                            <p class="text-gray-600">${nextLecture.time}</p>
+                            <p class="text-gray-600">${nextLecture.room}</p>
+                            <p class="text-sm mt-1">Instructor: ${nextLecture.professor}</p>
+                        </div>
+                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">Up Next</span>
+                    </div>
+                `;
+                
+                // Calculate time until next lecture
+                const timeRange = nextLecture.time.split(" - ");
+                const startTime = timeRange[0].split(":");
+                const startHour = parseInt(startTime[0]);
+                const startMinute = parseInt(startTime[1]);
+                
+                let minutesUntil = (startHour - hours) * 60 + (startMinute - minutes);
+                if (minutesUntil < 0) minutesUntil += 24 * 60; // If next lecture is tomorrow
+                
+                document.getElementById('countdown').textContent = minutesUntil > 60 ? 
+                    `Starts in ${Math.floor(minutesUntil / 60)} hour(s) and ${minutesUntil % 60} minute(s)` : 
+                    `Starts in ${minutesUntil} minute(s)`;
+            }
+        }
+
+        function loadTimetable() {
+            const tbody = document.getElementById('timetableBody');
+            const weekSelector = document.getElementById('weekSelector');
+            const currentWeek = weekSelector.value;
+            
+            // Get unique times from all days
+            const allTimes = new Set();
+            Object.values(timetableData[currentWeek]).forEach(dayLectures => {
+                dayLectures.forEach(lecture => {
+                    allTimes.add(lecture.time);
+                });
+            });
+            
+            // Sort times
+            const times = Array.from(allTimes).sort();
+            
+            // Build table
+            const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+            const rows = [];
+            
+            times.forEach(time => {
+                const row = [`<td class="p-3 font-medium border-b">${time}</td>`];
+                
+                days.forEach(day => {
+                    const dayLectures = timetableData[currentWeek][day] || [];
+                    const lecture = dayLectures.find(l => l.time === time);
+                    
+                    if (lecture) {
+                        let bgColor = "bg-white";
+                        if (lecture.subject === "Lunch Break") {
+                            bgColor = "bg-gray-100";
+                        } else if (lecture.subject.includes("Lab")) {
+                            bgColor = "bg-blue-50";
+                        }
+                        
+                        row.push(`
+                            <td class="p-3 border-b ${bgColor}">
+                                <div class="font-medium">${lecture.subject}</div>
+                                <div class="text-sm text-gray-600">${lecture.room}</div>
+                                ${lecture.professor ? `<div class="text-xs text-gray-500">${lecture.professor}</div>` : ''}
+                            </td>
+                        `);
+                    } else {
+                        row.push(`<td class="p-3 border-b bg-gray-50"></td>`);
+                    }
+                });
+                
+                rows.push(`<tr>${row.join('')}</tr>`);
+            });
+            
+            tbody.innerHTML = rows.join('');
+            
+            // Update current and next lecture when week changes
+            if (currentWeek === 'current') {
+                updateCurrentAndNextLecture();
+            }
+        }
+
+        function loadPracticals() {
+            const practicalsList = document.getElementById('practicalsList');
+            
+            if (practicals.length === 0) {
+                practicalsList.innerHTML = `
+                    <div class="p-6 bg-gray-50 rounded-lg text-center">
+                        <p class="text-gray-500">No practicals scheduled for today</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            practicalsList.innerHTML = practicals.map(practical => `
+                <div class="p-5 border rounded-lg hover:shadow-md transition lecture-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg">${practical.subject}</h3>
+                            <p class="text-gray-600 mt-1">${practical.description}</p>
+                            <div class="flex items-center mt-2 text-gray-600">
+                                <i class="bi bi-clock mr-1"></i>
+                                <span>${practical.time}</span>
+                            </div>
+                            <div class="flex items-center mt-1 text-gray-600">
+                                <i class="bi bi-geo-alt mr-1"></i>
+                                <span>${practical.lab}</span>
+                            </div>
+                            <div class="flex items-center mt-1 text-gray-600">
+                                <i class="bi bi-person mr-1"></i>
+                                <span>${practical.instructor}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm mb-2">Scheduled</span>
+                            <button onclick="sendPracticalReminder('${practical.subject}')" class="text-blue-600 text-sm hover:text-blue-800 flex items-center">
+                                <i class="bi bi-bell mr-1"></i> Notify me
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-sm font-medium text-gray-700">Required Materials:</p>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            ${practical.materials.map(material => 
+                                `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">${material}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // UI Functions
+        function showNotificationSettings() {
+            document.getElementById('notificationModal').classList.remove('hide');
+        }
+
+        function closeNotificationSettings() {
+            document.getElementById('notificationModal').classList.add('hide');
+        }
+
+        function saveNotificationSettings() {
+            closeNotificationSettings();
+            showToast("Notification settings saved successfully!");
+        }
+
+        function sendNotification() {
+            showToast("SMS notification sent for current lecture!");
+        }
+
+        function sendPracticalReminder(subject) {
+            showToast(`SMS reminder set for ${subject}`);
+        }
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            
+            // Set toast color based on type
+            if (type === "error") {
+                toast.classList.remove('bg-green-600');
+                toast.classList.add('bg-red-600');
+            } else {
+                toast.classList.remove('bg-red-600');
+                toast.classList.add('bg-green-600');
+            }
+            
+            toast.classList.remove('hide');
+            
+            setTimeout(() => {
+                toast.classList.add('hide');
+            }, 3000);
+        }
+
+        function printTimetable() {
+            showToast("Printing timetable...");
+            window.print();
+        }
+
+        function downloadTimetable() {
+            showToast("Downloading timetable as PDF...");
+            // In a real implementation, this would generate and download a PDF
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrentDate();
+            
+            // Update lecture info every minute
+            setInterval(updateCurrentAndNextLecture, 60000);
+            
+            // Add event listener to input fields to validate password length
+            document.getElementById('studentPassword').addEventListener('input', validatePassword);
+            document.getElementById('adminPassword').addEventListener('input', validatePassword);
+        });
+        
+        function validatePassword(e) {
+            const passwordField = e.target;
+            if (passwordField.value.length < 8) {
+                passwordField.setCustomValidity('Password must be at least 8 characters long');
+            } else {
+                passwordField.setCustomValidity('');
+            }
+        }
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
